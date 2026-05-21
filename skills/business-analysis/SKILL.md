@@ -21,9 +21,9 @@ or non-trivial implementation proceeds.
 For an existing product, business analysis for an enhancement, feature, defect,
 or refactoring is a delta against the product's canonical analysis graph, not a
 separate feature-local graph. Preserve existing IDs, reuse or revise existing
-goals/problems/solutions/risks/requirements where appropriate, and add new
-elements only when the current product graph cannot honestly represent the
-requested change.
+goals/problems/solutions/risks/constraints/requirements where appropriate, and
+add new elements only when the current product graph cannot honestly represent
+the requested change.
 
 Feature, release, or change notes may summarize the slice of the graph in focus,
 but they should not become competing sources of truth with their own isolated
@@ -55,7 +55,8 @@ pretending the whole product has been fully analyzed.
 
 1. Establish whether this is greenfield analysis or delta analysis.
    - If Stage 2 artifacts already exist, identify the existing goals, problems,
-     solutions, risks, and requirements affected by the requested change.
+     solutions, risks, constraints, and requirements affected by the requested
+     change.
    - Do not start new local numbering for a feature unless no product-level
      analysis baseline exists.
 
@@ -69,17 +70,26 @@ pretending the whole product has been fully analyzed.
    - Distinguish symptoms from root problems when possible.
    - Call out conjunctive or disjunctive causality when it matters.
 
-4. Handle solutions stated upfront as hypotheses.
+4. Identify constraints as given conditions outside the project's sphere of control.
+   - Distinguish constraints from problems using the why-chain test: trace
+     causes backward from a problem; when the next "why" answer points outside
+     the sphere of influence, you have crossed into a constraint.
+   - For each constraint, record what it bounds (goals or solutions) and the
+     problems it produces when colliding with them.
+   - Classify sphere as `influence-but-out-of-scope` (could become a problem
+     with scope expansion) or `outside-control-entirely` (truly outside).
+   - Solutions do not address constraints; they work around them by addressing
+     the problems constraints produce.
+
+5. Handle solutions stated upfront as hypotheses.
    - Do not treat an initial solution request as sufficient analysis by itself.
    - Ground it back into goals, problems, and constraints.
 
-5. Propose or revise solutions.
-   - Each solution must resolve a problem or directly advance a goal.
+6. Propose or revise solutions.
+   - Each solution must satisfy at least one of: addresses a problem, advances a goal directly, or mitigates a risk.
    - Run the Solution Alignment Check: no orphaned solution ideas.
-
-6. Classify each solution on the build-vs-buy spectrum.
-   - Prefer the leftmost viable option: Adopt -> Configure -> Extend -> Build.
-   - Explain why a more rightward option is justified when used.
+   - Keep solutions substrate-agnostic. Build-vs-buy classification is a
+     release-time decision and belongs in `release-planning`, not here.
 
 7. Derive or update requirements as the living specification.
    - Functional and non-functional requirements should trace back to solutions.
@@ -91,33 +101,28 @@ pretending the whole product has been fully analyzed.
    - Review risk relationships so `threatens` and `mitigates` are not reversed.
    - Score meaningful risks with lightweight likelihood x impact judgment when
      useful.
-   - Propose proportionate mitigation plans; medium risks usually deserve cheap
-     prevention or insurance rather than heavy infrastructure.
+   - Propose proportionate mitigating solutions, recorded as solutions with
+     `mitigates R-##` edges — not as separate elements inline on risk rows.
+     Medium risks usually deserve cheap prevention or insurance rather than
+     heavy infrastructure. A risk may also be explicitly accepted with
+     recorded rationale.
 
 9. Define scope.
    - Record what is in scope for the current phase.
    - Record what is out of scope so valuable but deferred ideas do not drift in silently.
 
-10. Run a traceability check.
-   - Every goal has a solution or contributing sub-goal.
-   - Every problem traces to at least one goal it obstructs.
-   - Every solution traces to a problem it resolves or a goal it advances.
-   - Every risk has a mitigation.
-   - No orphaned elements.
+10. Invoke `analysis-review` to run traceability and defensibility verification.
+    - For greenfield analysis the entire artifact is the delta; for delta
+      analysis the review is scoped to the changes.
+    - `analysis-review` performs the traceability check, runs causal
+      defensibility tests on the relevant edges, flags weak links, and
+      updates the review banner on every modified artifact.
+    - This keeps greenfield and delta paths running the same verification
+      and avoids duplicating review logic across skills.
 
-11. Run causal defensibility tests.
-   - Execution Test: Solution -> Sub-Goal?
-   - Neutralization Test: Sub-Goal -> Problem eliminated or significantly mitigated?
-   - Completeness Test: Connected sub-goals sufficient for parent goal?
-   - Strategic Impact Test: Goal moves the needle on the higher goal?
-
-12. Flag weak links with recommendations.
-   - Preserve weak links if they are still directionally useful, but say why they are weak.
-   - Recommend what would make the link stronger.
-
-13. Present the completed Stage 2 package for approval.
-   - Do not treat analysis as settled until a human reviews it.
-   - Do not move into design decisions until the analysis is approved.
+11. Present the completed Stage 2 package for approval.
+    - Do not treat analysis as settled until a human reviews it.
+    - Do not move into design decisions until the analysis is approved.
 
 ## Outputs
 

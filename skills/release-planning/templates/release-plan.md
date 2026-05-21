@@ -20,6 +20,19 @@ Draft — pending review.
 
 <!-- Why this release matters now. -->
 
+## Solution Classification
+
+<!-- For each in-scope solution, record the build-vs-buy posture chosen for
+     THIS release. Classification is a release-time decision, not a property
+     of the underlying solution. The same solution may take a different
+     posture in a future release as substrate (vendors, platforms, tools)
+     evolves. The chosen posture determines the downstream activity profile
+     captured in the work breakdown below. -->
+
+| Solution | Classification | Rationale |
+|---|---|---|
+| S-01 | Configure | |
+
 ## Scope
 
 ### In Scope

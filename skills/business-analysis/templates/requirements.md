@@ -1,5 +1,13 @@
 # Requirements
 
+> **Methodology Review Status**
+> Last comprehensive review: <YYYY-MM-DD> by <reviewer name>
+> Covers: traceability + defensibility
+<!-- This banner is updated by the analysis-review skill on completion of
+     traceability and defensibility checks. Skills that modify this file
+     reset the banner to a "Modified since last review" state. See
+     docs/03-design/analysis-review-mechanism.md for details. -->
+
 <!-- This document captures what the system must do. Requirements flow from the business analysis solutions and are the
      primary input to design. Each requirement traces back to one or more business analysis solutions.
 

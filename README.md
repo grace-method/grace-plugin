@@ -6,7 +6,7 @@ GRACE is a methodology for disciplined AI-assisted software development. This re
 
 ## What this plugin ships
 
-- **14 skills** surfaced as `/grace:*` slash commands in Claude Code: `project-start`, `project-setup`, `project-definition`, `business-analysis`, `change-assessment`, `design-review`, `testing-strategy`, `implementation`, `validation`, `operations`, `retirement`, `release-planning`, `risk-management`, and `install`.
+- **15 skills** surfaced as `/grace:*` slash commands in Claude Code: `project-start`, `project-setup`, `project-definition`, `business-analysis`, `change-assessment`, `design-review`, `testing-strategy`, `implementation`, `validation`, `operations`, `retirement`, `release-planning`, `risk-management`, `feedback`, and `install`.
 - **Methodology rules** (`GRACE.md` and six rule files) that the `/grace:install` skill writes into a consuming project so they load into every conversation.
 - **Templates** bundled with the skills that produce artifacts (business analysis, design review, implementation, etc.).
 - **Version and freshness metadata** so consuming projects can tell which methodology version they're running.
@@ -39,6 +39,10 @@ After `/grace:install`:
 | `.claude/GRACE.md` | GRACE | Overwritten on every `/grace:install`. |
 | `.claude/rules/*.md` | GRACE | Overwritten on every `/grace:install`. |
 | `.claude/CLAUDE.md` | You | Only the anchor line is managed; everything else is yours. |
+
+## Send feedback
+
+Run `/grace:feedback` in any project where the plugin is installed. It walks you through articulating what's unclear, missing, or working poorly, applies a quick data-sensitivity check, and drafts an email to the methodology author. You review and send. Use it for anything about GRACE itself — a confusing rule, a skill that asks the wrong questions, a missing capability, or just an idea.
 
 ## License
 

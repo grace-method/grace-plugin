@@ -54,7 +54,19 @@ Prefer current project artifacts over conversation memory:
    - Record why this release matters now.
    - Separate in-scope, out-of-scope, deferred, and explicitly rejected work.
 
-4. Create the release-to-stage work breakdown.
+4. Classify in-scope solutions on the build-vs-buy spectrum.
+   - For each in-scope solution, choose Adopt / Configure / Extend / Build
+     per the Solution Types taxonomy in `grace-lifecycle.md`.
+   - Prefer the leftmost viable option. Explain why a more rightward option
+     is justified when used.
+   - Classification is a release-time decision, not a property of the
+     solution definition. The same solution may take different posture in
+     different releases as substrate (vendors, platforms, tools) evolves.
+   - The chosen posture determines the downstream activity profile (vendor
+     evaluation, platform configuration, custom development) reflected in
+     the work breakdown below.
+
+5. Create the release-to-stage work breakdown.
    - Analysis: what must be confirmed, refined, or added?
    - Design: what design decisions, prototypes, or reviews are needed?
    - Implementation: what features, stories, or code changes are expected?
@@ -62,16 +74,16 @@ Prefer current project artifacts over conversation memory:
    - Operations: what readiness, runbook, deployment, or support work is needed?
    - Retirement: what old capability, artifact, or process must be closed, if any?
 
-5. Identify risks, dependencies, and assumptions.
+6. Identify risks, dependencies, and assumptions.
    - Include scope risk, sequencing risk, technical risk, artifact drift risk, and human-review risk where relevant.
    - Prefer mitigation plans over vague risk labels.
 
-6. Write or update the release plan.
+7. Write or update the release plan.
    - Use `docs/release-planning/`.
    - Use `templates/release-plan.md` as the starting shape when creating a new release plan.
    - Keep the plan concise enough to guide work without becoming a second copy of every stage artifact.
 
-7. Present for human review.
+8. Present for human review.
    - Do not treat the release scope as approved until the human accepts it.
    - After approval, route to the needed stage skills.
 

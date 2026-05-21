@@ -16,7 +16,7 @@ Use this skill before accepting implementation work.
 1. Classify the change scale:
    - **Trivial**: typo, constant, rename -> implement directly
    - **Small**: simple bug fix, field addition, bounded behavior tweak -> apply sniff test, then implement
-   - **Medium**: new feature, significant behavior change, new integration -> do lightweight delta business analysis against the existing product graph
+   - **Medium**: new feature, significant behavior change, new integration -> do a lightweight delta review of the existing analysis (or initial business analysis if none exists)
    - **Large**: cross-cutting change, new subsystem, architectural shift -> do full business analysis before implementation, updating or re-baselining the product graph
 
 2. For small changes, apply the sniff test:
@@ -35,7 +35,8 @@ Use this skill before accepting implementation work.
 5. Route to the appropriate next step:
    - `trivial` -> implement directly
    - `small` -> implement after sniff test
-   - `medium` -> `business-analysis` as a delta against the canonical product graph
+   - `medium` + existing analysis present -> `analysis-review` (delta-focused review of the existing analysis)
+   - `medium` + no existing analysis -> `business-analysis` (initial analysis)
    - `large` -> `business-analysis` to update or re-baseline the product graph, then `design-review`
 
 ## Output
