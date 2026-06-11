@@ -34,11 +34,16 @@
 ## Test Mapping
 
 <!-- Map feature-level criteria to smoke/e2e tests. This is where the testing strategy's
-     outer-loop model meets concrete test cases. -->
+     outer-loop model meets concrete test cases.
 
-| Criterion | Test Layer | Test Location |
-|---|---|---|
-| (criterion summary) | Smoke / E2E | `tests/smoke/(file)` |
+     For each criterion, list its enforcement points - every component that must
+     independently uphold it (e.g. server-side filter AND client-side visibility guard).
+     The outer-loop test covers the criterion end to end; each enforcement point also
+     gets inner-loop coverage in its story. -->
+
+| Criterion | Enforcement Points | Test Layer | Test Location |
+|---|---|---|---|
+| (criterion summary) | (component A, component B) | Smoke / E2E | `tests/smoke/(file)` |
 
 ## Stories
 

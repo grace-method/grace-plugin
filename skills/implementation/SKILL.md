@@ -51,23 +51,28 @@ gates. It is for disciplined delivery, not for skipping analysis or design.
    - Story docs carry single-behavior, single-component acceptance criteria.
    - If the work is already story-sized, reference or create the appropriate story doc directly.
 
-4. Follow TDD for each story.
+4. Classify each acceptance criterion before writing any test.
+   - Enumerate the criterion's enforcement points: every component that must independently uphold it for the criterion to hold from the user's perspective.
+   - One enforcement point: story-level criterion; inner-loop TDD alone is sufficient.
+   - More than one: feature-level criterion; an outer-loop test is required. A unit test on one enforcement point is not sufficient coverage.
+   - Rule of thumb: "the user sees X" is always feature-level — what the user sees is the product of every layer between the data and the screen.
+
+5. For feature-level criteria, write the failing outer-loop test first.
+   - Write it at the appropriate layer before implementing any enforcement point.
+   - Use inner-loop TDD (step 6) to drive each enforcement point's implementation.
+   - When the inner loop is green, the outer-loop test should pass.
+   - If it still fails, the gap is at the integration layer.
+
+6. Follow TDD for each story.
    - Red: write the minimal failing test from an acceptance criterion. Run it and confirm failure. Do not write implementation yet.
    - Green: write the simplest code that makes the test pass. No more.
    - Refactor: improve structure without changing behavior. All tests must still pass.
 
-5. Apply outer-loop and inner-loop testing where integration boundaries exist.
-   - Start from the feature-level acceptance criterion.
-   - Write a failing outer-loop test at the appropriate layer.
-   - Use inner-loop TDD to drive the implementation.
-   - When the inner loop is green, the outer-loop test should pass.
-   - If it still fails, the gap is at the integration layer.
-
-6. Record technical debt intentionally.
+7. Record technical debt intentionally.
    - If constraints force an expedient implementation, log the gap between the expedient and the ideal.
    - Tie debt to the relevant feature or story and include a repayment trigger.
 
-7. Present an implementation checkpoint at meaningful milestones.
+8. Present an implementation checkpoint at meaningful milestones.
    - Summarize what was built.
    - Report test results.
    - Confirm traceability.
@@ -82,6 +87,7 @@ gates. It is for disciplined delivery, not for skipping analysis or design.
 - Batching multiple behaviors into one test
 - Integration criteria placed at story level
 - Component criteria placed at feature level
+- Declaring a feature-level criterion covered by unit tests on one enforcement point
 
 ## Definition Of Done
 

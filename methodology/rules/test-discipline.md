@@ -26,5 +26,11 @@ Acceptance criteria placement:
 - Wrong: integration criterion at story level.
 - Wrong: component criterion at feature level.
 
+Before writing any test for a criterion, enumerate its enforcement points —
+every component that must independently uphold it. More than one enforcement
+point -> feature-level criterion -> outer-loop test required before any layer
+is implemented. "The user sees X" is always feature-level; a unit test on one
+side of the boundary is not sufficient.
+
 When unit tests pass but the product is broken, the gap is usually at the integration layer.
 Treat that as a sign that outer-loop tests are missing.
