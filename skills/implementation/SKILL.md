@@ -52,6 +52,7 @@ gates. It is for disciplined delivery, not for skipping analysis or design.
    - If the work is already story-sized, reference or create the appropriate story doc directly.
 
 4. Classify each acceptance criterion before writing any test.
+   - Draw criteria from the User Manual's procedure steps as well as from the requirements. A step carrying a state precondition ("the year file exists and is included before the year's first import") is a criterion, and it spans more than one component by construction. Weight the obligation toward rare steps: a daily step is exercised into correctness for free, while an annual one has a twelve-month feedback loop that a millisecond test replaces.
    - Enumerate the criterion's enforcement points: every component that must independently uphold it for the criterion to hold from the user's perspective.
    - One enforcement point: story-level criterion; inner-loop TDD alone is sufficient.
    - More than one: feature-level criterion; an outer-loop test is required. A unit test on one enforcement point is not sufficient coverage.

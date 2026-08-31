@@ -54,11 +54,13 @@ current product graph cannot honestly represent the change.
 <!-- Mitigations are solutions, not separate elements. Record solution IDs in
      the Mitigated By column; the corresponding solution row must list this
      risk in its Addresses / Mitigates column. Disposition is one of:
-     Mitigated, Accepted (with rationale), Monitored, Deferred. -->
+     Mitigated, Accepted (with rationale), Monitored, Deferred.
+     Score = Likelihood × Impact on a 1–5 scale each.
+     1–4: usually negligible · 5–9: worth tracking · 10–15: mitigate · 16–25: serious. -->
 
-| ID | Risk | Threatens | Likelihood | Impact | Mitigated By | Disposition |
-|---|---|---|---|---|---|---|
-| R-01 | | S-01 | | | S-03 | Mitigated |
+| ID | Risk | Threatens | Likelihood | Impact | Score | Mitigated By | Disposition |
+|---|---|---|---|---|---|---|---|
+| R-01 | | S-01 | | | | S-03 | Mitigated |
 
 ## 5. Constraint Register
 <!-- Constraints are conditions outside the project's sphere of control that

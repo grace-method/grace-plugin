@@ -6,7 +6,7 @@ GRACE is a methodology for disciplined AI-assisted software development. This re
 
 ## What this plugin ships
 
-- **15 skills** surfaced as `/grace:*` slash commands in Claude Code: `project-start`, `project-setup`, `project-definition`, `business-analysis`, `change-assessment`, `design-review`, `testing-strategy`, `implementation`, `validation`, `operations`, `retirement`, `release-planning`, `risk-management`, `feedback`, and `install`.
+- **17 skills** surfaced as `/grace:*` slash commands in Claude Code: `project-start`, `project-setup`, `project-definition`, `business-analysis`, `analysis-review`, `change-assessment`, `design-review`, `testing-strategy`, `implementation`, `test-adequacy-review`, `validation`, `operations`, `retirement`, `release-planning`, `risk-management`, `feedback`, and `install`.
 - **Methodology rules** (`GRACE.md` and six rule files) that the `/grace:install` skill writes into a consuming project so they load into every conversation.
 - **Templates** bundled with the skills that produce artifacts (business analysis, design review, implementation, etc.).
 - **Version and freshness metadata** so consuming projects can tell which methodology version they're running.

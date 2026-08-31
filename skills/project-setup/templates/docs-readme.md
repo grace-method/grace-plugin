@@ -24,7 +24,7 @@ Update this section whenever the project moves to a new stage or when the next a
 - `03-design/` — UX, system, UI, traceability, and design review artifacts.
 - `04-implementation/` — features, stories, technical debt, and implementation notes.
 - `05-validation/` — validation evidence and outcome review.
-- `06-operations/` — readiness, runbooks, incidents, and operational learning.
+- `06-operations/` — readiness, the user manual, incidents, and operational learning.
 - `07-retirement/` — end-of-life planning when relevant.
 
 Detailed stage artifacts should be created by the relevant GRACE skill when that stage begins. Empty templates should not be treated as evidence that the work is done.

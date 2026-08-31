@@ -10,13 +10,13 @@
 - [ ] Alerts configured - the team will know something is wrong before users do
 - [ ] Baseline healthy measurements established
 
-## Runbook
-- [ ] Runbook exists at `06-operations/runbook.md`
+## User Manual
+- [ ] User Manual exists at `06-operations/user-manual.md`, created during design
 - [ ] Someone unfamiliar with the system can operate, restart, or recover it without tribal knowledge
 
 ## Rollback Plan
 - [ ] A known, tested path exists to restore the prior state if a deployment causes harm
-- [ ] Rollback procedure is documented in the runbook
+- [ ] Rollback procedure is documented in the user manual
 
 ## Environment Parity
 - [ ] Runtime version is pinned and matches across local, preview, and production

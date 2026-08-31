@@ -57,6 +57,7 @@ Every change request should be classified before implementation begins.
 - Non-trivial work without approved analysis → use `/grace:business-analysis`
 - Approved analysis without explicit design → use `/grace:design-review` or `/grace:testing-strategy`
 - Implementation request → use `/grace:change-assessment` first, then `/grace:implementation`
+- Implementation finished at medium or large scale, or at small scale with any feature-level criterion → use `/grace:test-adequacy-review` before reporting the build done
 - Validation or outcome review → use `/grace:validation`
 - Operations or retirement work → use `/grace:operations` or `/grace:retirement`
 - Risk reasoning at any stage → use `/grace:risk-management`

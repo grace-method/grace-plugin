@@ -70,13 +70,18 @@ in the lifecycle.
 
 10. Present the validation report for approval.
    - Human review decides whether to accept, iterate, or stop.
+   - Write the decision dated and attributed at the moment it is made —
+     `Accept R-NNN — <name>, <YYYY-MM-DD>` — in both the validation report
+     and the evidence log. The line *is* the acceptance rather than a report
+     of one, so it cannot point elsewhere for its state, and a date not
+     written now is not recoverable later from the artifacts themselves.
 
 ## Outputs
 
 Produce or update these artifacts as needed:
 
 - `docs/05-validation/evidence-log.md`
-- `docs/05-validation/validation-report.md`
+- `docs/05-validation/validation-report.md` — the acceptance decision carries its date and its decider
 
 Use the templates in this skill directory when scaffolding or substantially
 reshaping validation artifacts.
