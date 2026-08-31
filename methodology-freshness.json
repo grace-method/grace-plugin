@@ -1,8 +1,8 @@
 {
-  "pluginVersion": "1.5.0",
-  "buildTimestamp": "2026-08-31T12:07:00Z",
-  "repositoryRevision": "9ee64c1d0538e4ad81130446b91b591f41d02013",
-  "workingTreeDirty": true,
+  "pluginVersion": "1.5.1",
+  "buildTimestamp": "2026-08-31T12:10:22Z",
+  "repositoryRevision": "fb888ea3e77fddedef97e6b683e4b8305f635ec4",
+  "workingTreeDirty": false,
   "files": [
     { "path": "methodology/GRACE.md", "sha256": "f3bfe9494ae828caff9ecff477ce6f1fc693d130a8c20d16b74c195b02c00d57" },
     { "path": "methodology/rules/principles.md", "sha256": "3592b63c1395bf7eae8d4502321a2840436452ef4cb8d8f825082730bb5df5f4" },
