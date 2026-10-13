@@ -1,7 +1,7 @@
 {
-  "pluginVersion": "1.6.0",
-  "buildTimestamp": "2026-10-13T21:09:06Z",
-  "repositoryRevision": "8f560d60c1818aa27915d1d0812eceede1130f7f",
+  "pluginVersion": "1.6.1",
+  "buildTimestamp": "2026-10-13T22:29:58Z",
+  "repositoryRevision": "8025bfe6287c50d26021e5ade0011acff41ed779",
   "workingTreeDirty": false,
   "files": [
     { "path": "methodology/GRACE.md", "sha256": "f3bfe9494ae828caff9ecff477ce6f1fc693d130a8c20d16b74c195b02c00d57" },
