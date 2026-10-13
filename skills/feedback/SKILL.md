@@ -5,7 +5,7 @@ description: >
   guidance, missing capability, friction in a skill, ideas for improvement,
   or bugs in the plugin itself. Walks the user through articulating the
   issue, applies a data-sensitivity check, and delivers the feedback as a
-  Gmail draft to david.allen@gravie.com (falls back to a copy-ready
+  Gmail draft to davidkrethallen@gmail.com (falls back to a copy-ready
   markdown block if Gmail tools are unavailable). Use when the user says
   things like "I want to flag something about GRACE", "the methodology
   could be better at X", "send feedback", or invokes `/grace:feedback`.
@@ -26,7 +26,7 @@ feedback shapes:
 - An improvement idea grounded in real project experience
 
 The output is a Gmail draft in the user's account, addressed to
-`david.allen@gravie.com`, that the user can review, edit, and send. If
+`davidkrethallen@gmail.com`, that the user can review, edit, and send. If
 Gmail tools are not available, fall back to a copy-ready markdown block.
 
 ## Interaction Pattern
@@ -86,7 +86,7 @@ Before drafting the email, walk the user through a brief sensitivity
 review. Say something like:
 
 > Quick check before drafting the email. This will go to
-> david.allen@gravie.com, which is outside any project's trust
+> davidkrethallen@gmail.com, which is outside any project's trust
 > boundary. Please make sure the summary above does **not** include:
 >
 > - Patient information (PHI)
@@ -152,12 +152,12 @@ Submitted via /grace:feedback. Plugin version: <if discoverable from
 
 Subject line: the headline from Step 3.
 
-Recipient: `david.allen@gravie.com`.
+Recipient: `davidkrethallen@gmail.com`.
 
 Now create the Gmail draft. Prefer the Gmail draft tool
 (`mcp__claude_ai_Gmail__create_draft`) with these parameters:
 
-- `to`: `["david.allen@gravie.com"]`
+- `to`: `["davidkrethallen@gmail.com"]`
 - `subject`: the headline
 - `body`: the composed body above
 
@@ -171,7 +171,7 @@ If the Gmail tool is not available or the call fails, fall back to
 printing the email as a copy-ready markdown block:
 
 ````
-**To:** david.allen@gravie.com
+**To:** davidkrethallen@gmail.com
 **Subject:** <headline>
 
 <body>
@@ -198,7 +198,7 @@ recipient is one person and follow-up is best-effort.
   not to future conversations. (Memory may capture that `/grace:feedback`
   exists, but not the contents of any individual feedback.)
 - **Recipient is fixed.** The skill always addresses
-  `david.allen@gravie.com`. If the user asks to send to someone else,
+  `davidkrethallen@gmail.com`. If the user asks to send to someone else,
   decline and suggest they edit the draft in Gmail after it is created.
 - **No scope creep.** This skill captures feedback. It does not also
   triage, prioritize, or open backlog items. The recipient does that.

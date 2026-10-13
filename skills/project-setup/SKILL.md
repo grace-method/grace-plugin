@@ -61,6 +61,7 @@ When using the standard structure, scaffold this tree:
 ```text
 docs/
 ├── README.md
+├── ROADMAP.md          # created at the close of Stage 1, not seeded here
 ├── HANDOFF.md
 ├── BACKLOG.md
 ├── release-planning/
@@ -87,6 +88,11 @@ Use these sources when seeding starter files:
 | `docs/README.md` | `templates/docs-readme.md` |
 | `docs/HANDOFF.md` | `templates/handoff.md` |
 | `docs/BACKLOG.md` | `templates/backlog.md` |
+
+`docs/ROADMAP.md` is **deliberately not seeded here.** A roadmap needs a strategic
+goal, which does not exist until Stage 1 closes; an empty one written now would be
+the "empty template treated as evidence" this skill warns against. The
+`project-definition` skill creates it, via the `roadmap` skill.
 
 ## Current Implementation Note
 

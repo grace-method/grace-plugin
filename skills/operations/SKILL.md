@@ -31,16 +31,25 @@ Use this skill for live-system readiness and ongoing operational handling.
    - Rollback plan: is there a tested path to restore prior state?
    - Operational ownership: is responsibility explicit?
 
-2. For steady-state operations, guide the incident lifecycle.
+2. Review the roadmap at the product's own operating cadence.
+   - The rhythm comes from the User Manual's calendar — whatever beat the
+     operator actually runs (monthly close, release train, weekly review).
+   - Invoke the `roadmap` skill. This trigger answers what closure cannot:
+     **external drift** — the world moving, needs changing, the goal shifting.
+     Internal staleness is handled at release closure; drift can only be noticed.
+   - It is also the one trigger that recurs when no work is happening, so a
+     missed review is itself an attrition signal worth naming to the human.
+
+3. For steady-state operations, guide the incident lifecycle.
    - Detect -> Triage -> Respond -> Resolve -> RCCA
 
-3. Route RCCA findings back to the right stage.
+4. Route RCCA findings back to the right stage.
    - Analysis for flawed assumptions or goals
    - Design for structural gaps
    - Implementation for code defects
    - Operations for process, monitoring, or configuration gaps
 
-4. Route resulting bugs and enhancements back into the normal change pipeline.
+5. Route resulting bugs and enhancements back into the normal change pipeline.
    - Operations should not become an untracked side channel for product change.
 
 ## Outputs
@@ -50,6 +59,7 @@ Produce or update these artifacts as needed:
 - `docs/06-operations/production-readiness.md`
 - `docs/06-operations/user-manual.md` — extend and maintain; it is created in Stage 3
 - `docs/06-operations/incidents/incident-*.md`
+- `docs/ROADMAP.md` — reviewed at the operating cadence via the `roadmap` skill; not owned here
 
 Use the templates in this skill directory when scaffolding or substantially
 reshaping operational artifacts.

@@ -5,6 +5,11 @@
 <!--
 Managed by GRACE — overwritten on every /grace:install run.
 This file is owned by the GRACE methodology. Edits will be lost on the next install.
+
+Your own rules belong in ~/.claude/rules/local-<name>.md — any filename GRACE
+does not ship. Those load every session exactly like this file, and no install
+reads, rewrites or removes them: GRACE claims only the filenames it wrote.
+Put a personal rule there rather than editing this file.
 -->
 
 # Cross-Cutting Principles

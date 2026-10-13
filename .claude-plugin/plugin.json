@@ -1,6 +1,6 @@
 {
   "name": "grace",
   "description": "GRACE methodology — disciplined AI-assisted software development",
-  "version": "1.5.1",
+  "version": "1.6.0",
   "author": { "name": "David Kreth Allen" }
 }

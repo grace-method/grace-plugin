@@ -56,7 +56,14 @@ Definition.
    - If the gap is weak or the rationale is not yet credible, say so.
    - If proceeding is justified, make that recommendation explicit.
 
-8. Present the Stage 1 artifacts for approval.
+8. Create the roadmap once the strategic goal is settled.
+   - Stage 1 is the first moment a strategic goal and intended value exist, which
+     is what a roadmap needs and why it is not scaffolded earlier.
+   - Invoke the `roadmap` skill. It writes `docs/ROADMAP.md` with the goal and a
+     release table reading *not yet planned* — an honest state, not neglect.
+   - Every project gets one; length scales with the project, the sections do not.
+
+9. Present the Stage 1 artifacts for approval.
    - Do not treat product definition as settled until a human reviews it.
    - Do not move into Stage 2 analysis until the Stage 1 artifacts are approved enough.
 
@@ -66,6 +73,7 @@ Produce or update these artifacts as needed:
 
 - `docs/01-project-definition/project-definition-summary.md`
 - `docs/01-project-definition/project-thesis-and-principles.md`
+- `docs/ROADMAP.md` (via the `roadmap` skill)
 
 Use the templates in this skill directory when scaffolding or substantially
 reshaping those artifacts.

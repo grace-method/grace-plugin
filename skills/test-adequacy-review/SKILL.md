@@ -302,13 +302,26 @@ The failure mode this gate guards against is the builder self-reporting
 "tests pass, it works." Authority comes from the reviewers not being the
 builder — and the stronger pass not sharing the builder's vendor.
 
-**The vendor pool is Anthropic and OpenAI. Pass 2 runs on the vendor that
-did not build the code.**
+**The vendor pool is Anthropic, OpenAI, and Google. Pass 2 runs on a vendor
+that did not build the code — the first one, in the order below, whose
+pre-flight probe passes.** (Google added 2026-09-08; the pool was two vendors
+before that.)
 
-| Builder | Pass 2 reviewer |
+| Builder | Pass 2 reviewer, in order of preference |
 | --- | --- |
-| Claude Code / Claude CLI (Anthropic) | OpenAI — the `codex` CLI |
-| Codex (OpenAI) | Anthropic — the `claude` CLI |
+| Claude Code / Claude CLI (Anthropic) | 1. OpenAI — the `codex` CLI · 2. Google — the `agy` CLI |
+| Codex (OpenAI) | 1. Anthropic — the `claude` CLI · 2. Google — the `agy` CLI |
+| Antigravity CLI (Google) | 1. Anthropic — the `claude` CLI · 2. OpenAI — the `codex` CLI |
+
+A pool of two has a reviewer pool of **one**: the builder is always a member,
+so a single vendor's outage, or a subscription quota running dry for the
+afternoon, blocks the gate outright. That happened on 2026-09-08, and the
+third vendor exists so that the gate's only remaining hard stop is all other
+vendors failing at once. The order within a row is the human's capability
+ranking, re-sweepable at any time; second place is not a downgrade on the
+ladder below — vendor independence and the process boundary both hold — but
+it **is** recorded, as the reviewer tier (below), and the closure report says
+which vendor reviewed and why the first choice was skipped.
 
 Models from one vendor share training data and a common notion of what
 "well tested" looks like; agreement between two of them is partly family
@@ -356,16 +369,152 @@ earlier version of this table called that row simply "acceptable", which
 read as a second way to close the gate and contradicted the Pass 2
 requirements outright.
 
-**Pre-flight the other vendor's CLI before Pass 1** — a version call is
-enough. Availability is a fact to re-establish each run, not to assume from
-last month: vendors reorganize products, and a CLI is a separate artifact
-from a desktop app. Discovering the reviewer is uninstallable after a
-remediation cycle is the moment a silent downgrade is most tempting.
+**Reviewer tier.** Vendors do not sit at the same capability level at every
+moment, and the ranking above encodes that. Record which tier the Pass 2
+reviewer was — *first choice* or *fallback* — in the log's provenance table,
+next to the independence level and separate from it. Two runs can both be
+cross-vendor and still not be interchangeable evidence; the human decides how
+much weight a fallback verdict carries, and cannot decide that if the log
+does not say.
 
-**Data sharing is the human's standing decision.** Sending the worktree to
-the other vendor is acceptable only where the human has decided so — once,
-deliberately, before the first cross-vendor run; never per-run, never by
-the reviewer.
+**Pre-flight every candidate reviewer with a live probe before Pass 1 — a
+version call is not enough.** Availability is a fact to re-establish each
+run, not to assume from last month: vendors reorganize products, a CLI is a
+separate artifact from a desktop app, and a subscription quota runs dry
+without the binary changing at all. On 2026-09-08 `gemini --version` answered
+normally on a CLI Google had retired eleven weeks earlier, and `codex
+--version` answered normally with the plan's credits exhausted. Both pass a
+version check and fail the run. Discovering that after a remediation cycle is
+the moment a silent downgrade is most tempting.
+
+The probe is one prompt whose only correct reply is the word `OK`. A probe
+**passes** only when the command exits 0 *and* the reply contains that word;
+anything else — an auth error, a quota message, a hang, an empty reply — is a
+failure, and the vendor's `.err` file in the run directory is the reason the
+log records against it: the CLI's stderr, followed by the exit status the
+wrapper appends. The `.txt` beside it holds whatever the CLI replied. Walk the ordered list and take the first vendor
+that passes; probe only as far as you need to. Every probe is wrapped in a
+timeout, because a CLI waiting on a login page or an open stdin waits forever
+and macOS ships no `timeout`. **The timeout must kill the CLI itself, not rely
+on the signal to do it**: `perl -e 'alarm N; exec @ARGV'` looks like a timeout
+and is not one for a CLI that ignores SIGALRM, which every Go binary does by
+default — `agy` ran a full 30 seconds under a 3-second alarm and then exited 0.
+`run_with_timeout` below forks, and on the alarm kills the child (TERM, then
+KILL) and exits 142. `$RUN` is the run directory.
+
+### Pre-flight probes
+
+```bash
+# The timeout, for every probe below and for the Google launch. (The Codex and
+# Claude Pass 2 shapes are not yet wrapped in it.) It keeps the CLI as a
+# child and kills it itself — TERM, then KILL — because SIGALRM's default
+# action cannot be relied on: agy is a Go binary, and Go ignores SIGALRM. The
+# earlier wrapper (`alarm N; exec @ARGV`) let such a CLI run without limit and
+# then exited 0. Measured 2026-09-19 under bash and zsh: a child that ignores
+# SIGALRM stops at the budget with status 142; a child's own status passes
+# through; a missing binary leaves "exec failed" as the reason.
+run_with_timeout() {
+  perl -e '$SIG{ALRM} = sub { kill "TERM", $p; sleep 2; kill "KILL", $p; exit 142 };
+           alarm shift;
+           defined($p = fork) or die "fork failed: $!\n";
+           exec @ARGV or die "exec failed: $!\n" unless $p;
+           waitpid $p, 0;
+           my $s = $?; exit($s & 127 ? 128 + ($s & 127) : $s >> 8);' "$@"
+}
+
+# Probe output is written into the run directory, which is committed, and a CLI
+# that echoes a credential in an auth or quota message would commit it with the
+# rest. Every probe file is redacted as soon as it is written. Fail-closed: if
+# the redaction cannot run, the probe counts as failed *and* its output is
+# discarded, because a reply nobody could redact cannot be published — the
+# reason file then says so instead. (Confining the probes themselves is a different job:
+# `codex` and `claude` authenticate from the operator's own home directory, so
+# a throwaway home would break them — B-43.)
+redact_probe() {  # redact_probe <vendor>
+  python3 - "$RUN" "$1" <<'REDACT'
+import os, re, sys
+run, vendor = sys.argv[1], sys.argv[2]
+secret = re.compile(r"AQ\.[A-Za-z0-9_\-]{20,}|AIza[0-9A-Za-z_\-]{20,}"
+                    r"|sk-[A-Za-z0-9_\-]{20,}|gh[pousr]_[A-Za-z0-9]{20,}")
+for suffix in ("txt", "err", "out"):
+    path = os.path.join(run, f"probe-{vendor}.{suffix}")
+    if os.path.exists(path):
+        text = open(path, errors="ignore").read()
+        open(path, "w").write(secret.sub("[REDACTED]", text))
+REDACT
+  rc=$?
+  if [ $rc -ne 0 ]; then
+    # Nothing unredacted may survive, so the output goes rather than the reason:
+    # the reply and stdout are deleted and the reason file is replaced with why.
+    rm -f "$RUN/probe-$1.txt" "$RUN/probe-$1.out"
+    printf 'probe failed: output discarded unread (redaction unavailable)%s\n' \
+      "${2:+ — $2}" > "$RUN/probe-$1.err"
+    return 1
+  fi
+}
+
+# `$RUN` must exist before a probe runs: every redirection below writes into it,
+# and if they fail the probe looks like a failed vendor with an empty reason —
+# a healthy first choice skipped for nothing (B-40, extended).
+probe_run_dir_ok() {
+  [ -d "${RUN:-}" ] && return 0
+  echo "probe skipped: RUN is not a directory: ${RUN:-<unset>}" >&2
+  return 1
+}
+
+# OpenAI — codex
+probe_run_dir_ok && rm -f "$RUN/probe-openai.txt"
+probe_run_dir_ok && run_with_timeout 120 codex exec --ephemeral --skip-git-repo-check \
+  --sandbox read-only -o "$RUN/probe-openai.txt" "Reply with the single word OK." \
+  < /dev/null > "$RUN/probe-openai.out" 2> "$RUN/probe-openai.err" \
+  && grep -qw OK "$RUN/probe-openai.txt" \
+  && redact_probe openai \
+  || { s=$?; echo "probe failed: exit $s$([ $s -eq 142 ] && echo ' (alarm fired: timed out)')" >> "$RUN/probe-openai.err"; redact_probe openai "exit $s"; false; }
+
+# Anthropic — claude
+probe_run_dir_ok && run_with_timeout 120 env -u CLAUDECODE claude -p "Reply with the single word OK." \
+  --output-format json --no-session-persistence \
+  < /dev/null > "$RUN/probe-anthropic.txt" 2> "$RUN/probe-anthropic.err" \
+  && grep -qw OK "$RUN/probe-anthropic.txt" \
+  && redact_probe anthropic \
+  || { s=$?; echo "probe failed: exit $s$([ $s -eq 142 ] && echo ' (alarm fired: timed out)')" >> "$RUN/probe-anthropic.err"; redact_probe anthropic "exit $s"; false; }
+
+# Google — agy (Antigravity CLI on a Gemini API key; the retired gemini CLI is not a candidate)
+probe_run_dir_ok && run_with_timeout 120 agy -p "Reply with the single word OK." \
+  --output-format json --model gemini-3.8-flash --effort low \
+  < /dev/null > "$RUN/probe-google.txt" 2> "$RUN/probe-google.err" \
+  && grep -qw OK "$RUN/probe-google.txt" \
+  && redact_probe google \
+  || { s=$?; echo "probe failed: exit $s$([ $s -eq 142 ] && echo ' (alarm fired: timed out)')" >> "$RUN/probe-google.err"; redact_probe google "exit $s"; false; }
+```
+
+All three have the same shape, and the shape is the point: the reply goes to
+a **file**, so it is kept whatever it says; the CLI's **exit status is gated
+with `&&`**, not dropped down a pipe into `grep`; and on any failure the
+wrapper **appends the exit status to the `.err` file**, so a hang (the alarm
+delivers SIGALRM, status 142), a wrong reply (status 1 from `grep`, reply in
+the `.txt`), an error the CLI reports on stdout (envelope in the `.txt`,
+status in the `.err`), and a CLI that is **not installed** all leave a reason
+behind. That last one needs the `die`: perl's `exec` returns quietly with
+status 0 when there is nothing to exec, so without it a missing binary reads
+as a successful launch, and the Codex form — whose reply file is written by
+the CLI rather than truncated by the shell — would then *pass* on a reply left
+behind by an earlier round. Hence the `rm -f` ahead of it. The first cut of these
+probes piped two of them into `grep`, which discarded both the CLI's exit
+status and its reply; a same-vendor review measured that a CLI printing `OK`
+and exiting 1 passed, and that three of the four failure modes named above
+left an empty reason file.
+
+These commands are load-bearing and `tools/reviewer-preflight.test.ts` runs
+them, extracted from this file, against stub CLIs that answer the version
+call and then fail the probe — the exact hole the version check had.
+
+**Data sharing is the human's standing decision, one per vendor.** Sending
+the worktree to another vendor is acceptable only where the human has decided
+so — once per vendor, deliberately, before that vendor's first cross-vendor
+run; never per-run, never by the reviewer. A fallback vendor the human has
+not decided on is not a candidate, however healthy its probe: skip it and
+record why.
 
 ## The audit rubric
 
@@ -452,15 +601,17 @@ prose. Without the quote, it is a NOTE.
 
 ## Pass 2 mechanics
 
-Launch a reviewer that satisfies all of these: the other vendor per the
-table; a new process, not a subagent of the build session, with no access
+Launch a reviewer that satisfies all of these: a vendor other than the
+builder's, the first in the table whose probe passed; a new process, not a subagent of the build session, with no access
 to the build conversation; non-persistent; top-tier model at a high
 reasoning effort (see above — high enough that capability is not the
 limiting factor, not reflexively the ceiling); instructed not to modify the
 worktree; given the rubric,
 register slice, test discipline, and change-set description inline in its
 prompt; told who built the code and to ignore every prior adequacy claim,
-including in commit messages; told to identify itself.
+including in commit messages; never asked to identify itself (see
+Provenance below); launched with the least privilege that lets it run the
+suite.
 
 ### What the reviewer may read
 
@@ -523,6 +674,186 @@ env -u CLAUDECODE claude -p "<prompt>" \
 `--output-format json` preserves the evidence: the envelope's `modelUsage`
 keys carry the resolved model. The verdict text is `.result`.
 
+### Google: launch with least privilege
+
+Google reviews through the Antigravity CLI, `agy`, on a Gemini API key
+(verified 2026-09-19 on 1.2.7). **It runs inside agy's own sandbox, with the
+narrowest permissions that let it run the suite — never with
+`--dangerously-skip-permissions`.** That flag grants the whole machine, not
+the repository, and a reviewer is an automated agent that goes looking when
+it is stuck: in trials on 2026-09-18, reviewers that could not find their
+files searched the home folder, read `~/.zsh_history` (which held an API
+key), and dumped their environment. The fingerprint below catches a reviewer
+that *changes* the repository; nothing catches one that *reads* outside it,
+so reading has to be prevented rather than detected.
+
+Set `REPO` (the repository), `RUN` (the run directory), `PROMPT` (the prompt
+file) and `GEMINI_API_KEY`, then:
+
+```bash
+(
+: "${REPO:?set REPO to the repository}" "${RUN:?set RUN to the run directory}" \
+  "${PROMPT:?set PROMPT to the prompt file}" "${GEMINI_API_KEY:?set GEMINI_API_KEY}"
+[[ -d "$REPO" && -d "$RUN" && -f "$PROMPT" ]] \
+  || { echo "REPO and RUN must be directories and PROMPT a file" >&2; exit 2; }
+run_with_timeout() {
+  perl -e '$SIG{ALRM} = sub { kill "TERM", $p; sleep 2; kill "KILL", $p; exit 142 };
+           alarm shift;
+           defined($p = fork) or die "fork failed: $!\n";
+           exec @ARGV or die "exec failed: $!\n" unless $p;
+           waitpid $p, 0;
+           my $s = $?; exit($s & 127 ? 128 + ($s & 127) : $s >> 8);' "$@"
+}
+WORK="$(mktemp -d "${TMPDIR:-/tmp}/pass2-sbx.XXXXXX")" || exit 2
+trap 'rm -rf "$WORK"' EXIT
+trap 'exit 130' INT; trap 'exit 143' TERM HUP
+RHOME="$WORK/home"; RTMP="$WORK/tmp"; PARK="$WORK/park"
+BRAIN="$RHOME/.gemini/antigravity-cli/brain"
+mkdir -p "$BRAIN" "$RTMP" "$PARK"
+# The reviewer runs the suite and its counts are compared with the builder's, so
+# it must run on the same toolchain. A scrubbed PATH resolves `node` to whatever
+# the default list finds first, which on the machine where this was measured was
+# four major versions from the operator's own (round 9). The builder's node
+# directory therefore goes first, whatever else the path holds.
+NODE_BIN="$(dirname "$(command -v node || command -v false)")"
+RPATH="$NODE_BIN:${REVIEWER_PATH:-/opt/homebrew/bin:/usr/local/bin:/Library/Developer/CommandLineTools/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin}"
+# Confined exactly like the review itself, and without the key, which a version
+# call does not need: this is still the vendor's self-updating binary running on
+# the machine. Left unconfined it ran with the operator's own HOME and whole
+# environment — every secret in it — which is what the rest of this block exists
+# to prevent.
+run_with_timeout 60 env -i HOME="$RHOME" PATH="$RPATH" LANG=en_US.UTF-8 TMPDIR="$RTMP/" \
+  agy --version < /dev/null > "$PARK/pass2-agy-version.txt" 2>&1 \
+  || echo "unrecorded — the version call failed" > "$PARK/pass2-agy-version.txt"
+# Which toolchain actually ran the suite, for the log's provenance table.
+run_with_timeout 60 env -i HOME="$RHOME" PATH="$RPATH" LANG=en_US.UTF-8 TMPDIR="$RTMP/" \
+  sh -c 'printf "node %s\nnpm %s\n" "$(node -v 2>/dev/null || echo unrecorded)" \
+                                      "$(npm -v 2>/dev/null || echo unrecorded)"' \
+  < /dev/null >> "$PARK/pass2-agy-version.txt" 2>&1
+cat > "$RHOME/.gemini/antigravity-cli/settings.json" <<JSON
+{
+  "modelProvider": "gemini",
+  "toolPermission": "proceed-in-sandbox",
+  "permissions": { "allow": [
+    "read_file($REPO)", "write_file($REPO)",
+    "read_file($RTMP)", "write_file($RTMP)",
+    "read_file($BRAIN)"
+  ] }
+}
+JSON
+(cd "$REPO" && run_with_timeout 3600 env -i HOME="$RHOME" \
+  PATH="$RPATH" \
+  LANG=en_US.UTF-8 USER="$(id -un)" TMPDIR="$RTMP/" \
+  npm_config_cache="$RTMP/npm-cache" npm_config_update_notifier=false \
+  GEMINI_API_KEY="$GEMINI_API_KEY" \
+  agy \
+  -p "$(cat "$PROMPT")" \
+  --model gemini-3.8-flash --effort high \
+  --output-format stream-json --sandbox \
+  < /dev/null > "$PARK/pass2-stream.jsonl" 2> "$PARK/pass2-provenance.log")
+rc=$?
+REDACT_VALUE="$GEMINI_API_KEY" python3 - "$PARK" <<'PY'
+import os, re, sys
+park, key = sys.argv[1], os.environ["REDACT_VALUE"]
+google_key = re.compile(r"AQ\.[A-Za-z0-9_\-]{20,}|AIza[0-9A-Za-z_\-]{20,}")
+for name in os.listdir(park):
+    p = os.path.join(park, name)
+    t = open(p, errors="ignore").read().replace(key, "[REDACTED:GEMINI_API_KEY]")
+    open(p, "w").write(google_key.sub("[REDACTED]", t))
+PY
+[[ $? -eq 0 ]] || exit 2   # a failed redaction must never reach RUN; the trap deletes PARK
+mv "$PARK"/* "$RUN/" || exit 2
+exit "$rc"
+)
+```
+
+Take the fingerprint before and after this block, as for every reviewer —
+with `RUN` outside the repository, or pointed at a parking folder whose
+contents are moved in after the second fingerprint: the block writes its
+outputs into `RUN`, and inside the repository they would move the fingerprint
+themselves.
+
+- **It fails closed.** It refuses to start without all four inputs — an
+  unset `RUN` would have lost every output while reporting success, an unset
+  `REPO` would have written empty allow rules, and an empty key would have
+  scrambled every output file — and it exits with the CLI's own status when
+  the CLI fails, outputs still redacted and kept. The throwaway home holds
+  unredacted transcripts, so it is deleted on any exit of the block itself,
+  including an interruption that reaches it — a signal to the process group,
+  which is what Ctrl-C and a killed tool call send. A signal to the launching
+  shell alone orphans the subshell and leaves the folder behind.
+   The signal traps are for zsh, the shell agents use on macOS:
+  measured, bash runs the `EXIT` trap when its process group gets SIGTERM
+  and zsh does not unless `TERM` is trapped too. The whole block is one
+  subshell so that its exits and traps never reach the shell that ran it.
+  Write it for both shells — `status`, for one, is read-only in zsh.
+
+- **Every permission is granted before launch, because a refused action ends
+  the session.** Headless `agy` cannot ask, so it refuses anything it would
+  have asked about, and a refused action ends the run with no verdict. Each
+  rule above was found that way, on 2026-09-19:
+  - read and write on the repository — its files, and the build outputs and
+    caches the suite writes. A permissions list that grants only reads leaves
+    even the repository read-only;
+  - read and write on a private temp folder, which `TMPDIR` points at — the
+    install tests work there;
+  - read only on the CLI's own session folder — a reviewer waiting on a slow
+    suite opens the task's log, and the log lives there.
+
+  Nothing else. Measured inside this shape: the home folder, `~/Code`, and a
+  sibling project were all blocked. **Headless mode honours the allow list**:
+  this skill said it did not (1.1.28, 2026-09-08), and on 1.2.7 it does.
+- **The settings live in a throwaway home.** The human's own `agy`
+  configuration is never edited, and the CLI's transcripts — which hold
+  whatever the reviewer saw — are deleted with it.
+- **The environment is scrubbed** to what the run needs. The Gemini key is
+  the one secret left, because the CLI needs it, and the reviewer can still
+  read it; so every output is redacted before it enters the repository.
+- **`PATH` puts the Command Line Tools ahead of `/usr/bin`.** Apple's `git`
+  launcher writes a cache to the shared per-user temp folder, which the
+  sandbox denies, and prints warnings that a no-stderr test fails on; the
+  real binary behind it does not. Any script using `mktemp -t` or a bare
+  `mktemp -d` hits the same wall, because on macOS both ignore `TMPDIR` —
+  create temporary files from an explicit template under `${TMPDIR:-/tmp}`.
+  `REVIEWER_PATH` overrides the path; the tests use it to put stubs first.
+- **The prompt must carry four things the other vendors' prompts do not:**
+  1. A first line of `/goal Run all the test suites to completion, read their
+     results, and then deliver the complete verdict.` The CLI enforces the
+     condition and ends the reply with `<!-- GOAL_COMPLETE -->`, which tells
+     a finished review from an abandoned one.
+  2. How to wait: long commands become background tasks; check them with the
+     task-status tool, never by opening the log; run `sleep 30` between
+     checks; never end the turn while one is RUNNING. Two launches ended with
+     no verdict because the reviewer stopped while the suite ran, and one
+     check run made 131 back-to-back status checks — 710,000 input tokens and
+     a quota error — where paced checking took 16.
+  3. That it is in a sandbox: a blocked command is a finding, and it must
+     never ask to leave, because the request ends the session.
+  4. No request to identify itself (see Provenance below).
+- **The prompt is an argument, never stdin.** `agy` does not read a prompt
+  from stdin — an empty `-p` is refused and a bare `--print` swallows the next
+  flag as its prompt. `"$(cat file)"` delivers it; macOS allows about 1 MB of
+  argv, which a prompt file never approaches. Attach the prompt to `-p`
+  directly and put every other flag after it.
+- **`stream-json`, not `json`.** The single-envelope `json` output carries
+  token counts but names no model; the NDJSON stream's first `init` event
+  carries `init.model`, which is the provenance evidence. Effort is echoed
+  nowhere, so it is recorded as requested-but-unverified. Record
+  `agy --version` beside it, as the block does: the CLI updates itself. The
+  block records the reviewer's `node` and `npm` versions there too, because the
+  reviewer runs the suite and its counts are compared with the builder's.
+- The verdict is the `response` field of the last `result` event:
+
+  ```text
+  grep '"event":"result"' <run-dir>/pass2-stream.jsonl | tail -1 \
+    | python3 -c 'import sys,json; print(json.load(sys.stdin)["result"]["response"])' \
+    > <run-dir>/pass2-verdict.md
+  ```
+
+- `agy` has no working-directory flag, so the block `cd`s into the repository
+  in a subshell. Its `init` event records `cwd` and `permission_mode`; check
+  both in the stream (`proceed-in-sandbox`, not `always-proceed`).
+
 ### Provenance: take identity from the runtime
 
 The flags you passed are not evidence of what reviewed the code, and a
@@ -534,15 +865,20 @@ distinguishing the cases.
 | --- | --- | --- |
 | `codex exec` | stderr session header | Yes |
 | `claude -p` | `--output-format json` → `modelUsage` keys | No |
+| `agy -p` | `--output-format stream-json` → the `init` event's `init.model` | No |
 
 Record requested and confirmed models separately, with the source of the
 confirmed value. **Prefer full model identifiers over aliases** when
 launching: an alias resolves to whatever the CLI currently maps it to,
 which is not necessarily the generation everyone assumes. Effort the
-runtime does not echo is recorded as requested-but-unverified. You may also
-ask the reviewer to open with a self-report block (vendor / model /
-effort); treat it as corroboration that often arrives vague or not at all,
-never as the mechanism.
+runtime does not echo is recorded as requested-but-unverified.
+
+**Do not ask the reviewer to identify itself.** A self-report was once
+allowed here as corroboration. It is worse than useless: on 2026-09-19 a
+Gemini reviewer asked for one ran `env | grep -i gemini` to find out,
+exposing its API key, and then named the wrong model. A reviewer with shell
+access answers a question about itself by inspecting its environment, and the
+runtime already holds the answer.
 
 ### Verify the reviewer changed nothing
 
@@ -628,7 +964,10 @@ in `docs/04-implementation/test-adequacy-runs/`. Each entry records the
 provenance table — vendor, product + version, model requested, model
 confirmed (with source), effort, process, verbatim command — for builder
 and both reviewers, with the independence level derived from the vendor
-rows rather than asserted. Unknown values are written `unrecorded`, never
+rows rather than asserted. The Pass 2 row also carries the **reviewer tier**
+(first choice or fallback) and, for a fallback, **which vendor was skipped and
+the probe's reason**, so a verdict from the second-choice vendor is never
+mistaken for one from the first. Unknown values are written `unrecorded`, never
 omitted or inferred. Per round, record counts **by lane**: the GAP-count
 trend across rounds is the convergence signal; proposals are tracked
 separately as register-refresh yield, and do not count against

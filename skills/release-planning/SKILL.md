@@ -43,6 +43,10 @@ Prefer current project artifacts over conversation memory:
    - defect, validation finding, or incident
    - design option or prototype
    - external milestone or operational need
+   - **Consult the roadmap first** (see the `roadmap` skill). Does this work
+     appear there? If not, either add it as a candidate or treat its absence as
+     a signal that the roadmap has stopped describing the project. Do not
+     re-derive the whole shape here — the roadmap owns it.
 
 2. Select the focus nodes.
    - Name the primary graph nodes in scope.
@@ -84,8 +88,11 @@ Prefer current project artifacts over conversation memory:
    - Number the plan at creation. Take the next free `R#` when you write the
      file, and name the file `release-NNN-slug.md` from the start. No release
      plan is ever renamed, so every reference to it is correct from the first
-     one. Roadmap candidates — hypotheses with no plan document — stay
-     unnumbered. Closed releases retain their numbers as historical artifacts.
+     one. Roadmap candidates stay unnumbered while they remain hypotheses;
+     **the test is the choosing, not the plan document**, so a sequence the
+     human has deliberately committed to may carry numbers ahead of its plans.
+     The `roadmap` skill owns what a candidate is. Closed releases retain their
+     numbers as historical artifacts.
    - A deferred, reordered, or dropped plan keeps its number. That is the
      accepted cost: gaps are cheaper than renaming, because stamping an
      identity does not propagate it to what already points at the old name.
@@ -126,7 +133,10 @@ Prefer current project artifacts over conversation memory:
      repointed, both in the move's commit** — a moved entry's links to
      entries that did *not* move break too, which is easy to miss because
      they still resolve inside the file they came from; the release index
-     row; the acceptance decision carrying its date and its decider.
+     row; **the roadmap's dated status row for this release, updated in the
+     closing commit** (the `roadmap` skill, trigger C-10 — the roadmap
+     replicates status deliberately, and closure is when that debt is paid);
+     the acceptance decision carrying its date and its decider.
      Everything else
      abstains — it points at the plan or carries a date — so it is not on
      this list and does not need checking.
