@@ -1,10 +1,11 @@
 {
-  "pluginVersion": "1.6.1",
-  "buildTimestamp": "2026-10-13T22:29:58Z",
-  "repositoryRevision": "8025bfe6287c50d26021e5ade0011acff41ed779",
+  "pluginVersion": "1.7.0",
+  "buildTimestamp": "2026-10-27T03:31:14Z",
+  "repositoryRevision": "56a4af515ead5ff9e599485867d8d24df6898f3e",
   "workingTreeDirty": false,
   "files": [
     { "path": "methodology/GRACE.md", "sha256": "f3bfe9494ae828caff9ecff477ce6f1fc693d130a8c20d16b74c195b02c00d57" },
+    { "path": "methodology/grace-lifecycle-overview.md", "sha256": "2c3312b0746adbd46f86da679a482f3e9943a9794e27a18640ff940801d250aa" },
     { "path": "methodology/rules/principles.md", "sha256": "5c1540986ab89fdd138d57a77f37ab070224174b031c75e8c83a42b1c248d10e" },
     { "path": "methodology/rules/consultant-reflex.md", "sha256": "bf90b00793d998f42bb77e107ec81d3459ea7bac42d81dbc1a0b9856976fcc55" },
     { "path": "methodology/rules/interaction.md", "sha256": "fcec4bb3649e50a0af119f7a669c92049e52cf10c3d90808c8b1795bcd429f82" },

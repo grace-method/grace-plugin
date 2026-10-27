@@ -8,12 +8,13 @@ GRACE is a methodology for disciplined AI-assisted software development. This re
 
 - **18 skills** surfaced as `/grace:*` slash commands in Claude Code: `project-start`, `project-setup`, `project-definition`, `business-analysis`, `analysis-review`, `change-assessment`, `design-review`, `testing-strategy`, `implementation`, `test-adequacy-review`, `validation`, `operations`, `retirement`, `release-planning`, `roadmap`, `risk-management`, `feedback`, and `install`.
 - **Methodology rules** (`GRACE.md` and six rule files) that the `/grace:install` skill writes into a consuming project so they load into every conversation.
+- **Human reference:** the [GRACE lifecycle overview](./methodology/grace-lifecycle-overview.md) introduces the stages and principles. It is optional reading and is not loaded as agent guidance.
 - **Templates** bundled with the skills that produce artifacts (business analysis, design review, implementation, etc.).
 - **Version and freshness metadata** so consuming projects can tell which methodology version they're running.
 
 ## If you are reviewing this rather than installing it
 
-Four files, in this order, are the quickest way to see how the methodology works:
+Start with the [lifecycle overview](./methodology/grace-lifecycle-overview.md) for the broader picture. Then these four files show how the methodology works in the plugin:
 
 1. [`methodology/GRACE.md`](./methodology/GRACE.md) — the entry point. Project types, how every change is classified by scale, and which skill each situation routes to.
 2. [`methodology/rules/consultant-reflex.md`](./methodology/rules/consultant-reflex.md) — the rule that makes the assistant check a request against a goal before it writes any code.
